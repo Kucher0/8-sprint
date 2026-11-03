@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   View,
@@ -6,8 +7,8 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-
 import Ionicons from "@expo/vector-icons/Ionicons";
+
 import { COLORS } from "../../constants";
 import { playSound } from "../../services/soundHandler";
 import dummyData from "../../dummyData";
@@ -15,7 +16,6 @@ import dummyData from "../../dummyData";
 export default function Play({ words }) {
   const [learningWords, setLearningWords] = useState(() => {
     const sourceWords = words === undefined ? dummyData : words;
-
     return (sourceWords || [])
       .filter((item) => item.status < 2)
       .map((item) => ({ ...item }));
@@ -28,58 +28,50 @@ export default function Play({ words }) {
 
   function goToNextWord() {
     setIsRevealed(false);
-
-    setCurrentIndex((previousIndex) =>
+    setCurrentIndex((index) =>
       learningWords.length > 0
-        ? (previousIndex + 1) % learningWords.length
+        ? (index + 1) % learningWords.length
         : 0
     );
   }
 
-  function onDidNotKnow() {
-    goToNextWord();
-  }
-
   function onKnewIt() {
-    setLearningWords((previousWords) =>
-      previousWords.map((item, index) =>
-        index === currentIndex
-          ? { ...item, status: item.status + 1 }
-          : item
-      )
+    const updatedWords = learningWords.map((item, index) =>
+      index === currentIndex
+        ? { ...item, status: item.status + 1 }
+        : item
     );
 
-    setIsRevealed(false);
+    const currentStatus = updatedWords[currentIndex].status;
 
-    setCurrentIndex((previousIndex) => {
-      const updatedWords = learningWords.map((item, index) =>
-        index === previousIndex
-          ? { ...item, status: item.status + 1 }
-          : item
-      );
-
+    if (currentStatus >= 2) {
       const remainingWords = updatedWords.filter(
         (item) => item.status < 2
       );
 
-      if (remainingWords.length === 0) return 0;
-
-      const nextWord = updatedWords.findIndex(
-        (item, index) =>
-          index > previousIndex && item.status < 2
+      setLearningWords(remainingWords);
+      setCurrentIndex((index) =>
+        remainingWords.length === 0
+          ? 0
+          : index >= remainingWords.length
+            ? 0
+            : index
       );
+    } else {
+      setLearningWords([
+        ...updatedWords.slice(currentIndex + 1),
+        ...updatedWords.slice(0, currentIndex + 1),
+      ]);
+      setCurrentIndex(0);
+    }
 
-      return nextWord === -1
-        ? updatedWords.findIndex((item) => item.status < 2)
-        : nextWord;
-    });
+    setIsRevealed(false);
   }
 
   if (!currentWord) {
     return (
       <View style={styles.container}>
         <Text style={styles.congrats}>Congrats!</Text>
-
         <Text style={styles.completed}>
           For now you have learned all the words
         </Text>
@@ -93,9 +85,7 @@ export default function Play({ words }) {
         style={styles.card}
         onPress={() => setIsRevealed((previous) => !previous)}
       >
-        <Text style={styles.word}>
-          {currentWord.word}
-        </Text>
+        <Text style={styles.word}>{currentWord.word}</Text>
 
         {isRevealed && (
           <View style={styles.details}>
@@ -124,9 +114,7 @@ export default function Play({ words }) {
               </Text>
             ) : null}
 
-            <Text style={styles.meaning}>
-              {currentWord.meaning}
-            </Text>
+            <Text style={styles.meaning}>{currentWord.meaning}</Text>
           </View>
         )}
       </Pressable>
@@ -135,20 +123,16 @@ export default function Play({ words }) {
         <View style={styles.buttons}>
           <Pressable
             style={[styles.button, styles.dontKnowButton]}
-            onPress={onDidNotKnow}
+            onPress={goToNextWord}
           >
-            <Text style={styles.buttonText}>
-              Didn't know it
-            </Text>
+            <Text style={styles.buttonText}>Didn't know it</Text>
           </Pressable>
 
           <Pressable
             style={[styles.button, styles.knewButton]}
             onPress={onKnewIt}
           >
-            <Text style={styles.buttonText}>
-              Knew it
-            </Text>
+            <Text style={styles.buttonText}>Knew it</Text>
           </Pressable>
         </View>
       )}
@@ -164,7 +148,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
-
   card: {
     width: "100%",
     minHeight: 190,
@@ -174,48 +157,40 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     elevation: 4,
   },
-
   word: {
     color: COLORS.primary900,
     fontSize: 32,
     fontWeight: "800",
     textAlign: "center",
   },
-
   details: {
     marginTop: 18,
   },
-
   phoneticsRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
-
   phonetics: {
     color: COLORS.fontMain,
     fontSize: 20,
   },
-
   soundButton: {
     marginLeft: 15,
     padding: 4,
   },
-
   partOfSpeech: {
     color: COLORS.grey600,
     fontSize: 16,
     textAlign: "center",
     marginTop: 8,
   },
-
   meaning: {
     color: COLORS.fontMain,
     fontSize: 18,
     textAlign: "center",
     marginTop: 12,
   },
-
   buttons: {
     width: "100%",
     flexDirection: "row",
@@ -223,7 +198,6 @@ const styles = StyleSheet.create({
     marginTop: 22,
     gap: 12,
   },
-
   button: {
     flex: 1,
     minHeight: 48,
@@ -232,21 +206,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 8,
   },
-
   dontKnowButton: {
     backgroundColor: COLORS.secondary800,
   },
-
   knewButton: {
     backgroundColor: COLORS.primary900,
   },
-
   buttonText: {
     color: COLORS.fontInverse,
     fontSize: 16,
     fontWeight: "600",
   },
-
   congrats: {
     color: COLORS.primary900,
     fontSize: 34,
@@ -254,7 +224,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 12,
   },
-
   completed: {
     color: COLORS.fontMain,
     fontSize: 20,
