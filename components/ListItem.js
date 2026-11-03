@@ -1,10 +1,11 @@
-import { View, StyleSheet, Text, StatusBar, Pressable } from "react-native";
+
+import { View, StyleSheet, Text, Pressable } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { playSound } from "../services/soundHandler";
 import { COLORS } from "../constants";
 
-export default Item = ({ item, onDelete }) => {
+const Item = ({ item, onDelete }) => {
   const navigation = useNavigation();
 
   return (
@@ -22,6 +23,7 @@ export default Item = ({ item, onDelete }) => {
           />
         </View>
       </Pressable>
+
       <Pressable
         style={styles.textContainer}
         onPress={() => navigation.navigate("EditWord", { wordData: item })}
@@ -29,6 +31,7 @@ export default Item = ({ item, onDelete }) => {
         <Text style={styles.title}>{item.word}</Text>
         <Text style={styles.definition}>{item.meaning}</Text>
       </Pressable>
+
       <Pressable
         style={styles.iconContainer}
         onPress={() => onDelete(item.word)}
@@ -70,3 +73,5 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
   },
 });
+
+export default Item;
